@@ -1,3 +1,33 @@
+/*
+ * "Final" queries
+ */
+
+--  Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
+SELECT 
+	cpib.name AS name_of_industry_branch,
+	cp.payroll_year,
+	round(avg(value),0) AS average_salary_in_CZK
+FROM
+	czechia_payroll AS cp
+JOIN czechia_payroll_industry_branch AS cpib 
+	ON cp.industry_branch_code = cpib.code
+JOIN czechia_payroll_calculation AS cpc 
+	ON cp.calculation_code = cpc.code 
+WHERE
+		cp.value IS NOT NULL 
+	AND cp.calculation_code = 100
+	AND cp.value_type_code = 5958
+GROUP BY cpib.code, cp.payroll_year
+ORDER BY
+	cp.industry_branch_code,
+	cp.payroll_year,
+	cp.payroll_quarter;
+
+
+/*
+ * support queries to help me understand the data
+ */
+
 SELECT
 	cp.id, 
 	cpib.name AS name_of_industry_branch,
@@ -17,29 +47,6 @@ WHERE
 		cp.value IS NOT NULL 
 	AND cp.calculation_code = 100
 	AND cp.value_type_code = 5958
-ORDER BY
-	cp.industry_branch_code,
-	cp.payroll_year,
-	cp.payroll_quarter;
-
-/* Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
- * 
- */
-SELECT 
-	cpib.name AS name_of_industry_branch,
-	cp.payroll_year,
-	round(avg(value),0) AS average_salary_in_CZK
-FROM
-	czechia_payroll AS cp
-JOIN czechia_payroll_industry_branch AS cpib 
-	ON cp.industry_branch_code = cpib.code
-JOIN czechia_payroll_calculation AS cpc 
-	ON cp.calculation_code = cpc.code 
-WHERE
-		cp.value IS NOT NULL 
-	AND cp.calculation_code = 100
-	AND cp.value_type_code = 5958
-GROUP BY cpib.code, cp.payroll_year
 ORDER BY
 	cp.industry_branch_code,
 	cp.payroll_year,
