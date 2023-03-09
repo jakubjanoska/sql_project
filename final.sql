@@ -20,7 +20,7 @@ WHERE value IS NOT NULL
  	AND cp.value_type_code = 5958;
 
 -- summary table nr. two 	
-CREATE OR REPLACE TABLE t_cz_price_cut
+-- CREATE OR REPLACE TABLE t_cz_price_cut
 SELECT
 	ROUND(AVG(cp.value),2) AS avg_price,
     cpc.name AS product,
@@ -39,6 +39,7 @@ ORDER BY cpc.name, cp.date_from;
 CREATE OR REPLACE TABLE t_jakub_janoska_project_SQL_primary_final
 SELECT 
 	cpc.quarter_year AS quarter_and_year, 
+	cpc.`year` AS `year`, 
 	cprl.value AS average_salary, 
 	cprl.name_of_industry_branch AS industry, 
 	cpc.avg_price AS average_price, 
@@ -49,6 +50,20 @@ FROM t_cz_payroll_cut AS cprl
 CROSS JOIN t_cz_price_cut  AS cpc 
 WHERE cprl.quarter_year = cpc.quarter_year
 ORDER BY cprl.name_of_industry_branch
+
+CREATE OR REPLACE TABLE t_jakub_janoska_project_SQL_secondary_final
+SELECT
+	C.country, 
+	ec.`year`, 
+	ec.GDP,
+	ec.gini, 
+	ec.population
+FROM countries AS c 
+JOIN economies AS ec
+	ON ec.country = c.country 
+WHERE (`YEAR` BETWEEN 2008 AND 2020) 
+	AND c.continent = 'Europe'
+ORDER BY c.country, ec.`year` 
 
 -- 2.question
 SELECT 
