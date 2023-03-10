@@ -123,18 +123,18 @@ ORDER BY avg(yearly_percentage_diff)
 
 -- 4.question
 SELECT 
-	t_sallary.`year`, 
-	t_sallary.percentige_diff_sallary, 
+	t_salary.`year`, 
+	t_salary.percentige_diff_salary, 
 	t_price.percentige_diff_price,
-	t_sallary.percentige_diff_sallary-t_price.percentige_diff_price AS percentage_point_difference
+	t_salary.percentige_diff_salary-t_price.percentige_diff_price AS percentage_point_difference
 FROM 
 	(
 	SELECT 
 		`YEAR`,
-		round(avg(average_salary) / (lag(avg(average_salary)) OVER (ORDER BY `year`)) * 100 -100, 2) AS percentige_diff_sallary
+		round(avg(average_salary) / (lag(avg(average_salary)) OVER (ORDER BY `year`)) * 100 -100, 2) AS percentige_diff_salary
 	FROM t_jakub_janoska_project_sql_primary_final AS pp
 	GROUP BY `year`
-	ORDER BY `year`) AS t_sallary
+	ORDER BY `year`) AS t_salary
 JOIN 
 	(
 	SELECT 
@@ -144,5 +144,5 @@ JOIN
 	GROUP BY `year`
 	ORDER BY `year`) AS t_price
 	ON
-	t_sallary.YEAR = t_price.YEAR
-WHERE t_sallary.percentige_diff_sallary-t_price.percentige_diff_price IS NOT NULL;
+	t_salary.YEAR = t_price.YEAR
+WHERE t_salary.percentige_diff_salary-t_price.percentige_diff_price IS NOT NULL;
