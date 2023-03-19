@@ -1,4 +1,6 @@
- -- summary table nr. one 	
+-- my discord name is vjanocka#5061 
+ 
+-- summary table nr. one 	
 CREATE OR REPLACE TABLE t_cz_payroll_cut		
 SELECT 
 	cp.value,
