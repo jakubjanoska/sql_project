@@ -36,7 +36,7 @@ WHERE cp.region_code IS NULL
 GROUP BY cpc.name, YEAR(cp.date_from), quarter(cp.date_from)
 ORDER BY cpc.name, cp.date_from;
 
--- final verzion of primary table
+-- final version of primary table
 CREATE OR REPLACE TABLE t_jakub_janoska_project_SQL_primary_final
 SELECT 
 	cpc.quarter_year AS quarter_and_year, 
@@ -73,7 +73,7 @@ SELECT
 	cpib.name AS name_of_industry_branch,
 	cp.payroll_year,
 	round(avg(value),0) AS average_salary_in_CZK,
-	round(avg(value) / lag(round(avg(value),0)) OVER (ORDER BY cpib.name, cp.payroll_year, cp.payroll_quarter) *100 - 100 ,4) AS salary_difference
+	round(avg(value) / lag(round(avg(value),0)) OVER (PARTITION BY name_of_industry_branch ORDER BY cpib.name, cp.payroll_year, cp.payroll_quarter) *100 - 100 ,4) AS salary_difference
 FROM
 	czechia_payroll AS cp
 JOIN czechia_payroll_industry_branch AS cpib 
@@ -88,12 +88,11 @@ ORDER BY
 	cp.payroll_year,
 	cp.payroll_quarter;
 
-
 -- 2.question
 SELECT 
 	quarter_and_year,
 	ROUND(AVG(average_salary), 0) AS average_salary,
-	average_price,
+	average_price AS average_item_price,
 	item,
 	ROUND(AVG(average_salary) / average_price, 0) AS amount_of_items
 FROM
@@ -146,3 +145,46 @@ JOIN
 	ON
 	t_salary.YEAR = t_price.YEAR
 WHERE t_salary.percentige_diff_salary-t_price.percentige_diff_price IS NOT NULL;
+
+-- 5.question
+SELECT 
+	cz_gdp.`year` AS `year`,  
+	cz_gdp.gdp_diff_percentige AS gdp_diff_percentige, 
+	percentige_diff_salary AS salary_diff_percentige, 
+	percentige_diff_price AS price_diff_percentige
+FROM 
+	(
+	SELECT
+		e.`year`,
+		e.GDP,
+		round(e.GDP / (lag(e.GDP) OVER (ORDER BY `year`)) * 100 -100 ,2)  AS gdp_diff_percentige
+	FROM economies AS e
+	WHERE
+		(`YEAR` BETWEEN 2006 AND 2020)
+		AND country IN ('Czech Republic')
+	Order BY e.`year`) AS cz_gdp
+	JOIN
+		(
+		SELECT 
+			t_salary.`year`, 
+			t_salary.percentige_diff_salary, 
+			t_price.percentige_diff_price,
+			t_salary.percentige_diff_salary-t_price.percentige_diff_price AS percentage_point_difference
+		FROM 
+			(
+			SELECT 
+				`YEAR`,
+				round(avg(average_salary) / (lag(avg(average_salary)) OVER (ORDER BY `year`)) * 100 -100, 2) AS percentige_diff_salary
+			FROM t_jakub_janoska_project_sql_primary_final AS pp
+			GROUP BY `year`
+			ORDER BY `year`) AS t_salary
+			JOIN 
+				(
+				SELECT 
+					`YEAR`, 
+					round(avg(average_price) / (lag(avg(average_price)) OVER (ORDER BY `year`)) * 100- 100 , 2) AS percentige_diff_price
+				FROM t_jakub_janoska_project_sql_primary_final AS pp
+				GROUP BY `year`
+				ORDER BY `year`) AS t_price
+				ON t_salary.YEAR = t_price.YEAR) AS price_and_salary_diff
+			ON cz_gdp.`year` = price_and_salary_diff.`year`;
